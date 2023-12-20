@@ -17,7 +17,7 @@ function PANEL:Init()
 end
 
 function PANEL:StartIntro()
-    self:PlayYouTubeVideo("x_czl2lrDsk") -- Reemplaza "TU_ID_DE_VIDEO_YOUTUBE" con el ID del video de YouTube que deseas reproducir.
+    self:PlayYouTubeVideo("TU_ID_DE_VIDEO_YOUTUBE") -- Reemplaza "TU_ID_DE_VIDEO_YOUTUBE" con el ID del video de YouTube que deseas reproducir.
 end
 
 function PANEL:PlayYouTubeVideo(videoID)
