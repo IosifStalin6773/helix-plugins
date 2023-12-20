@@ -11,10 +11,13 @@ function PANEL:Init()
     self:SetSize(ScrW(), ScrH())
     self:SetZPos(9999)
     self.loaded = false
+    self.continueText = 0
+    self.pulse = 0
+    self.countdown = 120 -- Establece el tiempo en segundos para la cuenta regresiva
 end
 
 function PANEL:StartIntro()
-    self:PlayYouTubeVideo("TU_ID_DE_VIDEO_YOUTUBE") -- Reemplaza "TU_ID_DE_VIDEO_YOUTUBE" con el ID del video de YouTube que deseas reproducir.
+    self:PlayYouTubeVideo("x_czl2lrDsk") -- Reemplaza "TU_ID_DE_VIDEO_YOUTUBE" con el ID del video de YouTube que deseas reproducir.
 end
 
 function PANEL:PlayYouTubeVideo(videoID)
@@ -43,6 +46,17 @@ function PANEL:PlayYouTubeVideo(videoID)
     ]])
 
     self.htmlPanel = htmlPanel
+
+    -- Inicia la cuenta regresiva en paralelo
+    timer.Create("IntroCountdown", 1, self.countdown, function()
+        self.countdown = self.countdown - 1
+
+        if (self.countdown == 0) then
+            self.closing = true
+            ix.gui.characterMenu:SetVisible(true)
+            self:Remove()
+        end
+    end)
 end
 
 function PANEL:ShowRules()
@@ -50,19 +64,31 @@ function PANEL:ShowRules()
 end;
 
 function PANEL:Think()
-    if(IsValid(ix.gui.characterMenu) and !self.closing) then
+    if (IsValid(ix.gui.characterMenu) and not self.closing) then
         ix.gui.characterMenu:SetVisible(false)
     end
 
-    if(IsValid(LocalPlayer()) and !self.loaded) then
+    if (IsValid(LocalPlayer()) and not self.loaded) then
         self.loaded = true
-        self:StartIntro();
+        self:StartIntro()
     end
 
-    if (input.IsKeyDown(KEY_SPACE) and !self.closing) then
-        self.closing = true
-        ix.gui.characterMenu:SetVisible(true)
-        self:Remove()
+    if (input.IsKeyDown(KEY_SPACE) and not self.closing) then
+        if (not self.pressStartTime) then
+            self.pressStartTime = RealTime()
+        end
+
+        local elapsedTime = RealTime() - self.pressStartTime
+
+        -- Si se mantiene presionada durante 5 segundos
+        if (elapsedTime >= 5) then
+            self.closing = true
+            ix.gui.characterMenu:SetVisible(true)
+            self:Remove()
+        end
+    else
+        -- Si la tecla se suelta, reinicia el temporizador
+        self.pressStartTime = nil
     end
 end
 
@@ -71,6 +97,9 @@ function PANEL:OnRemove()
         self.sound:Stop()
         self.sound = nil
     end
+
+    -- Detén la cuenta regresiva al eliminar el panel
+    timer.Remove("IntroCountdown")
 end
 
 function PANEL:Paint(w, h)
